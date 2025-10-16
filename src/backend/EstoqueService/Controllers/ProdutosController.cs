@@ -38,7 +38,7 @@ namespace EstoqueService.Controllers
             {
                 return NotFound();
             }
-            
+
             return Ok(produto);
         }
 
@@ -105,6 +105,44 @@ namespace EstoqueService.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // PUT: /api/produtos/{id}/dar-baixa
+        [HttpPut("{id}/dar-baixa")]
+        public async Task<IActionResult> DarBaixaEstoque(Guid id, [FromBody] int quantidade)
+        {
+            var produto = await _context.Produtos.FindAsync(id);
+            if (produto == null)
+            {
+                return NotFound(new { Mensagem = "Produto não encontrado." });
+            }
+
+            if (produto.SaldoEstoque < quantidade)
+            {
+                // Retorno HTTP 409 Conflict.
+                return Conflict(new { Mensagem = $"Estoque insuficiente para o produto {produto.Nome}." });
+            }
+
+            produto.SaldoEstoque -= quantidade;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Mensagem = "Baixa no estoque realizada com sucesso." });
+        }
+
+        // PUT: /api/produtos/{id}/compensar-baixa
+        [HttpPut("{id}/compensar-baixa")]
+        public async Task<IActionResult> CompensarBaixaEstoque(Guid id, [FromBody] int quantidade)
+        {
+            var produto = await _context.Produtos.FindAsync(id);
+            if (produto == null)
+            {
+                return Ok(new { Mensagem = "Produto não encontrado durante a compensação, mas o processo continuará." });
+            }
+
+            produto.SaldoEstoque += quantidade; // Devolve a quantidade ao estoque
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Mensagem = "Estoque compensado com sucesso." });
         }
     }
 }
