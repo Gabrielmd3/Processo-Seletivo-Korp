@@ -1,0 +1,65 @@
+# Arquivo .gitignore para um projeto monorepo com .NET e Angular
+
+# 1. REGRAS GERAIS E DE SISTEMA OPERACIONAL
+# ==========================================
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# 2. CONFIGURAÇÕES DE EDITORES E IDES
+# ====================================
+# Visual Studio / Rider
+.vs/
+.idea/
+*.suo
+*.user
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# 3. REGRAS PARA O BACKEND .NET / C#
+# ===================================
+# Pastas de compilação e build
+[Bb]in/
+[Oo]bj/
+
+# Arquivos de usuário e configurações locais
+*.csproj.user
+*.sln.docstates
+appsettings.Development.json
+secrets.json
+
+# Logs e arquivos temporários
+*.log
+*.tmp
+*.dbmdl
+testresults/
+
+# Pacotes
+packages/
+
+# 4. REGRAS PARA O FRONTEND ANGULAR / NODE.JS
+# ============================================
+# A pasta de dependências.
+node_modules/
+
+# Pasta de build do Angular
+dist/
+.angular/
+
+# Arquivos de log e cache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+
+# Arquivos de configuração de ambiente locais
+.env
+.env.local
+
+# Relatórios de testes e cobertura
+coverage/
