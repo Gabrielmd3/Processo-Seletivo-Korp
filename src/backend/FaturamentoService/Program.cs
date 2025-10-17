@@ -15,6 +15,7 @@ builder.Services.AddSwaggerGen();
 // Pega a string de conexão
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
+// Registra o DbContext com o provedor do PostgreSQL.
 builder.Services.AddDbContext<FaturamentoDbContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -30,11 +31,7 @@ builder.Services.AddHttpClient("EstoqueService", client =>
     client.BaseAddress = new Uri(estoqueApiUrl);
 });
 
-// --- CONSTRUÇÃO DA APLICAÇÃO ---
-
 var app = builder.Build();
-
-// --- CONFIGURAÇÃO DO PIPELINE HTTP ---
 
 // Configura o pipeline de requisições HTTP.
 if (app.Environment.IsDevelopment())

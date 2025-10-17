@@ -7,6 +7,13 @@
 .DS_Store
 Thumbs.db
 
+
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
+
 # 2. CONFIGURAÇÕES DE EDITORES E IDES
 # ====================================
 # Visual Studio / Rider
@@ -14,12 +21,19 @@ Thumbs.db
 .idea/
 *.suo
 *.user
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
 
 # Visual Studio Code
 .vscode/*
 !.vscode/settings.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.history/*
 
 # 3. REGRAS PARA O BACKEND .NET / C#
 # ===================================
@@ -46,6 +60,8 @@ packages/
 # ============================================
 # A pasta de dependências.
 node_modules/
+npm-debug.log
+yarn-error.log
 
 # Pasta de build do Angular
 dist/
@@ -63,3 +79,13 @@ yarn-error.log*
 
 # Relatórios de testes e cobertura
 coverage/
+
+# Miscellaneous
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+__screenshots__/
