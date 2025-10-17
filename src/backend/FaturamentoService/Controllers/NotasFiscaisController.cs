@@ -115,5 +115,87 @@ namespace FaturamentoService.Controllers
             return CreatedAtAction(nameof(GetNotaFiscal), new { id = notaFiscal.Id }, notaFiscal);
         }
 
+        // POST: api/notasfiscais/{id}/imprimir
+        [HttpPost("{id}/imprimir")]
+        public async Task<IActionResult> ImprimirNotaFiscal(Guid id)
+        {
+            var notaFiscal = await _context.NotasFiscais
+                                           .Include(nf => nf.Itens)
+                                           .FirstOrDefaultAsync(nf => nf.Id == id);
+
+            if (notaFiscal == null)
+            {
+                return NotFound(new { Mensagem = "Nota fiscal não encontrada." });
+            }
+
+            if (notaFiscal.Status != NotaStatus.Aberta)
+            {
+                return Conflict(new { Mensagem = $"Não é possível processar uma nota com status '{notaFiscal.Status}'." });
+            }
+
+            // Bloqueia a nota para evitar processamento duplo
+            notaFiscal.Status = NotaStatus.Processando;
+            await _context.SaveChangesAsync();
+
+            var httpClient = _httpClientFactory.CreateClient("EstoqueService");
+            // Lista para rastrear os itens que tiveram baixa com sucesso
+            var itensComBaixaSucesso = new List<NotaFiscalItem>();
+
+            // --- PASSO 2: Execução da Saga ---
+            foreach (var item in notaFiscal.Itens)
+            {
+                // Prepara o conteúdo da requisição
+                var jsonContent = new StringContent(item.Quantidade.ToString(), System.Text.Encoding.UTF8, "application/json");
+
+                try
+                {
+                    // Tenta dar baixa no estoque
+                    var response = await httpClient.PutAsync($"/api/produtos/{item.ProdutoId}/dar-baixa", jsonContent);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Se deu certo, adiciona o item à lista de sucesso
+                        itensComBaixaSucesso.Add(item);
+                    }
+                    else
+                    {
+                        // Se falhou, inicia a compensação
+                        var errorContent = await response.Content.ReadAsStringAsync();
+                        await CompensarTransacao(httpClient, itensComBaixaSucesso);
+
+                        notaFiscal.Status = NotaStatus.Cancelada;
+                        await _context.SaveChangesAsync();
+
+                        return Conflict(new { Mensagem = "Falha ao dar baixa no estoque. A transação foi revertida.", Causa = errorContent });
+                    }
+                }
+                catch (HttpRequestException ex)
+                {
+                    // Se o serviço de estoque estiver fora do ar
+                    await CompensarTransacao(httpClient, itensComBaixaSucesso);
+
+                    notaFiscal.Status = NotaStatus.Cancelada;
+                    await _context.SaveChangesAsync();
+
+                    return StatusCode(StatusCodes.Status503ServiceUnavailable, new { Mensagem = "O serviço de estoque está indisponível. A transação foi revertida.", Detalhes = ex.Message });
+                }
+            }
+
+            notaFiscal.Status = NotaStatus.Fechada;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Mensagem = "Nota fiscal processada e estoque atualizado com sucesso!", NotaFiscal = notaFiscal });
+        }
+
+        // Método auxiliar privado para a lógica de compensação
+        private async Task CompensarTransacao(HttpClient httpClient, List<NotaFiscalItem> itensParaCompensar)
+        {
+            // Passa por cada item que já teve baixa e devolve a quantidade ao estoque
+            foreach (var item in itensParaCompensar)
+            {
+                var jsonContent = new StringContent(item.Quantidade.ToString(), System.Text.Encoding.UTF8, "application/json");
+                await httpClient.PutAsync($"/api/produtos/{item.ProdutoId}/compensar-baixa", jsonContent);
+            }
+        }
     }
 }

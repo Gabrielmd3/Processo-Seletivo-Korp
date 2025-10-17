@@ -12,12 +12,23 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Pega a string de conexão do appsettings.json
+// Pega a string de conexão
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Registra o DbContext com o provedor do PostgreSQL.
 builder.Services.AddDbContext<FaturamentoDbContext>(options =>
     options.UseNpgsql(connectionString));
+
+//Configura o IHttpClientFactory para se comunicar com o EstoqueService
+
+builder.Services.AddHttpClient("EstoqueService", client =>
+{
+    var estoqueApiUrl = builder.Configuration["ServiceUrls:EstoqueApi"];
+    if (string.IsNullOrEmpty(estoqueApiUrl))
+    {
+        throw new InvalidOperationException("URL do EstoqueService não configurada.");
+    }
+    client.BaseAddress = new Uri(estoqueApiUrl);
+});
 
 // --- CONSTRUÇÃO DA APLICAÇÃO ---
 
