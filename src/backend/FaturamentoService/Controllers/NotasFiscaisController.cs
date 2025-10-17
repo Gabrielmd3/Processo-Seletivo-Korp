@@ -88,6 +88,11 @@ namespace FaturamentoService.Controllers
                     return Conflict(new { Mensagem = $"Estoque insuficiente para o produto '{produtoDoEstoque.Nome}'. Saldo atual: {produtoDoEstoque.SaldoEstoque}." });
                 }
 
+                if (itemDto.Quantidade <= 0)
+                {
+                    return Conflict(new { Mensagem = $"Selecione uma quantidade minima para o produto '{produtoDoEstoque.Nome}'" });
+                }
+
                 // 3. Cria o item da nota fiscal
                 var novoItem = new NotaFiscalItem
                 {
