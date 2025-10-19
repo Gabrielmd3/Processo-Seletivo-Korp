@@ -198,10 +198,39 @@ namespace FaturamentoService.Controllers
                 }
             }
 
+            // --- PASSO 3: Finalização ---
             notaFiscal.Status = NotaStatus.Fechada;
             await _context.SaveChangesAsync();
 
-            return Ok(new { Mensagem = "Nota fiscal processada e estoque atualizado com sucesso!", NotaFiscal = notaFiscal });
+            // Retorna a nota fiscal atualizada
+            httpClient = _httpClientFactory.CreateClient("EstoqueService");
+            var produtoIds = notaFiscal.Itens.Select(item => item.ProdutoId).ToList();
+            var responseDetails = await httpClient.PostAsJsonAsync("/api/produtos/details", produtoIds);
+            var produtosDetails = new List<ProdutoDto>();
+
+            // Se a chamada foi bem-sucedida, lê os detalhes dos produtos
+            if (responseDetails.IsSuccessStatusCode)
+            {
+                produtosDetails = await responseDetails.Content.ReadFromJsonAsync<List<ProdutoDto>>() ?? new List<ProdutoDto>();
+            }
+
+            // Mapeia para o DTO de resposta incluindo os nomes dos produtos
+            var responseDto = new NotaFiscalResponseDto
+            {
+                Id = notaFiscal.Id,
+                Numero = notaFiscal.Numero,
+                Status = notaFiscal.Status,
+                DataEmissao = notaFiscal.DataEmissao,
+                Itens = notaFiscal.Itens.Select(item => new NotaFiscalItemResponseDto
+                {
+                    Id = item.Id,
+                    ProdutoId = item.ProdutoId,
+                    ProdutoNome = produtosDetails?.FirstOrDefault(p => p.Id == item.ProdutoId)?.Nome ?? "Produto não encontrado",
+                    Quantidade = item.Quantidade,
+                    PrecoUnitario = item.PrecoUnitario
+                }).ToList()
+            };
+            return Ok(responseDto);
         }
 
         // Método auxiliar privado para a lógica de compensação

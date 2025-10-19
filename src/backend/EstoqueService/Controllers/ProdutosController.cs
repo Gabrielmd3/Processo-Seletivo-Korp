@@ -144,5 +144,20 @@ namespace EstoqueService.Controllers
 
             return Ok(new { Mensagem = "Estoque compensado com sucesso." });
         }
+
+        // POST: /api/produtos/details
+        [HttpPost("details")]
+        public async Task<ActionResult<IEnumerable<Produto>>> GetProdutosDetails([FromBody] IEnumerable<Guid> produtoIds)
+        {
+            if (produtoIds == null || !produtoIds.Any())
+            {
+                return BadRequest("É necessário fornecer uma lista de IDs de produtos.");
+            }
+            var produtos = await _context.Produtos
+                                         .Where(p => produtoIds.Contains(p.Id))
+                                         .ToListAsync();
+
+            return Ok(produtos);
+        }
     }
 }

@@ -79,3 +79,10 @@
     }
   }
 </div>
+
+@if (showInvoiceModal && selectedNota) {
+  <app-invoice-modal
+    [nota]="selectedNota"
+    (close)="showInvoiceModal = false">
+  </app-invoice-modal>
+}

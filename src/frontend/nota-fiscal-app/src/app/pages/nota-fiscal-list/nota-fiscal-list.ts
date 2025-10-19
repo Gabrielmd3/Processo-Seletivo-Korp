@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NotaFiscalService } from '../../services/nota-fiscal';
 import { NotaFiscal, NotaStatus } from '../../models/nota-fiscal.model';
+import { InvoiceModalComponent } from '../../components/invoice-modal/invoice-modal';
 
 // Componente para listar notas fiscais
 @Component({
   selector: 'app-nota-fiscal-list',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, InvoiceModalComponent],
   templateUrl: './nota-fiscal-list.html',
   styleUrl: './nota-fiscal-list.scss'
 })
@@ -16,11 +17,11 @@ export class NotaFiscalList implements OnInit {
   notasFiscais: NotaFiscal[] = [];
   isLoading = true;
   errorMessage = '';
-
   activeFilter: NotaStatus | 'Todos' = 'Todos';
+  showInvoiceModal = false;
+  selectedNota: NotaFiscal | null = null;
 
   constructor(private notaFiscalService: NotaFiscalService, private cdr: ChangeDetectorRef) { }
-
   // Carrega as notas fiscais ao iniciar o componente
   ngOnInit(): void {
     this.loadNotasFiscais();
@@ -56,11 +57,15 @@ export class NotaFiscalList implements OnInit {
   // Manipula a ação de imprimir uma nota fiscal
   onImprimir(id: string): void {
     this.notaFiscalService.imprimirNotaFiscal(id).subscribe({
-      next: () => {
+      next: (notaAtualizada) => {
         const index = this.notasFiscais.findIndex(nf => nf.id === id);
+        console.log(notaAtualizada);
         if (index !== -1) {
-          this.loadNotasFiscais();
+          this.notasFiscais[index] = notaAtualizada;
         }
+        this.selectedNota = notaAtualizada;
+        this.showInvoiceModal = true;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         // Exibe a mensagem de erro específica vinda do backend

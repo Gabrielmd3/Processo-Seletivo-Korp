@@ -1,2 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
+
+@media print {
+  // Esconde tudo que não for o conteúdo da nota
+  body * {
+    visibility: hidden;
+  }
+
+  // Mostra apenas o conteúdo da nota e seus filhos
+  #invoice-content, #invoice-content * {
+    visibility: visible;
+  }
+
+  // Garante que o conteúdo da nota ocupe toda a página
+  #invoice-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
