@@ -38,6 +38,12 @@ builder.Services.AddHttpClient("EstoqueService", client =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<FaturamentoDbContext>();
+    dbContext.Database.Migrate();
+}
+
 // Configura o pipeline de requisições HTTP.
 if (app.Environment.IsDevelopment())
 {

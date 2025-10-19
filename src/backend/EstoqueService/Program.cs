@@ -23,6 +23,12 @@ builder.Services.AddDbContext<EstoqueDbContext>(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<EstoqueDbContext>();
+    dbContext.Database.Migrate();
+}
+
 // --- CONFIGURAÇÃO DO PIPELINE HTTP ---
 
 // Configura o pipeline de requisições HTTP.
