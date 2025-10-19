@@ -21,12 +21,24 @@ namespace FaturamentoService.Controllers
 
         // GET: api/notasfiscais
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<NotaFiscal>>> GetNotasFiscais()
+        public async Task<ActionResult<IEnumerable<NotaFiscal>>> GetNotasFiscais([FromQuery] NotaStatus? status = null)
         {
-            var notas = await _context.NotasFiscais
-                                      .Include(nf => nf.Itens)
-                                      .AsNoTracking()
-                                      .ToListAsync();
+            // 1. Começamos com uma consulta base (IQueryable) que ainda não foi executada.
+            var query = _context.NotasFiscais
+                                .Include(nf => nf.Itens)
+                                .AsQueryable();
+
+            // 2. Se um filtro de status foi fornecido na URL, adicionamos uma cláusula WHERE.
+            if (status.HasValue)
+            {
+                query = query.Where(nf => nf.Status == status.Value);
+            }
+
+            // 3. Adicionamos a ordenação (sempre as mais recentes primeiro) e executamos a consulta.
+            var notas = await query.OrderByDescending(nf => nf.DataEmissao)
+                                   .AsNoTracking()
+                                   .ToListAsync();
+
             return Ok(notas);
         }
 
