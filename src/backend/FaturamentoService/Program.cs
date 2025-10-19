@@ -1,12 +1,17 @@
 using FaturamentoService.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- CONFIGURAÇÃO DOS SERVIÇOS ---
 
 // 1. Adicionar o serviço que registra e habilita o uso de Controladores na aplicação.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+    {
+        // Esta linha faz a mágica: converte enums para strings no JSON
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });;
 
 // 2. Adicionar os serviços padrão do Swagger que funcionam com Controladores.
 builder.Services.AddEndpointsApiExplorer();
