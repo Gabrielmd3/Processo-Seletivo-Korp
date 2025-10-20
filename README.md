@@ -11,11 +11,9 @@ A aplicação simula um ambiente de faturamento onde é possível gerenciar prod
 * **📦 Gestão de Produtos:**
     * Cadastro, leitura, atualização e exclusão (CRUD) de produtos.
     * Controle de saldo de estoque individual para cada produto.
-
 * **📄 Gestão de Notas Fiscais:**
-    * Cadastro de notas fiscais com numeração e status (`ABERTA`, `FECHADA`, `CANCELADA`).
+    * Cadastro de notas fiscais com numeração e status (`Aberta`, `Processando`, `Fechada`, `Cancelada`).
     * Inclusão de múltiplos produtos em uma única nota fiscal.
-
 * **🖨️ Impressão e Faturamento:**
     * Endpoint para "imprimir" (processar) uma nota fiscal.
     * Validação de saldo em estoque de todos os itens antes de confirmar a operação.
@@ -51,11 +49,11 @@ Para evitar condições de corrida (race conditions), como duas requisições te
 
 ## 💻 Tecnologias Utilizadas
 
-* **Backend (Serviço de Estoque):** `[C# com .NET]`
-* **Backend (Serviço de Faturamento):** `[C# com .NET]`
-* **Frontend:** `[Angular]`
-* **Bancos de Dados:** `[PostgreSQL]` (Duas instâncias separadas, uma para cada serviço)
-* **Infraestrutura e Orquestração:** `Docker` e `Docker Compose`
+* **Backend (Serviço de Estoque):** C# com .NET 8
+* **Backend (Serviço de Faturamento):** C# com .NET 8
+* **Frontend:** Angular 20
+* **Bancos de Dados:** PostgreSQL
+* **Infraestrutura e Orquestração:** Docker e Docker Compose
 
 ## 🚀 Como Executar o Projeto
 
@@ -68,30 +66,28 @@ Siga os passos abaixo para executar a aplicação em seu ambiente local:
 
 ```bash
 # 1. Clone o repositório
-git clone [https://github.com/seu-usuario/nome-do-repositorio.git](https://github.com/seu-usuario/nome-do-repositorio.git)
+git clone [https://github.com/gabrielmd3/processo-seletivo-korp.git](https://github.com/gabrielmd3/processo-seletivo-korp.git)
 
 # 2. Navegue até a raiz do projeto
-cd nome-do-repositorio
+cd processo-seletivo-korp
 
 # 3. Suba os containers com Docker Compose
 # O comando irá construir as imagens e iniciar todos os serviços e bancos de dados.
 docker-compose up --build -d
 ```
 Após a execução, as APIs estarão disponíveis nos respectivos endereços:
-* **Serviço de Estoque:** `http://localhost:PORTA_ESTOQUE`
-* **Serviço de Faturamento:** `http://localhost:PORTA_FATURAMENTO`
-* **Frontend (Angular):** `http://localhost:4200`
+* **Serviço de Estoque:** `http://localhost:5001`
+* **Serviço de Faturamento:** `http://localhost:5002`
+* **Frontend (Angular):** `http://localhost:8080`
 
-## ⚙️ Endpoints da API (Exemplo)
+## ⚙️ Endpoints da API
 
 ### Serviço de Estoque
 * `GET /api/produtos` - Lista todos os produtos.
 * `POST /api/produtos` - Cadastra um novo produto.
-* `PUT /api/produtos/{id}/baixar-estoque` - Decrementa o saldo do produto.
+* `PUT /api/produtos/{id}/dar-baixa` - Decrementa o saldo do produto.
 
 ### Serviço de Faturamento
 * `GET /api/notasfiscais` - Lista todas as notas fiscais.
 * `POST /api/notasfiscais` - Cria uma nova nota fiscal.
 * `POST /api/notasfiscais/{id}/imprimir` - Processa (imprime) uma nota fiscal, disparando o fluxo da Saga.
-
----
