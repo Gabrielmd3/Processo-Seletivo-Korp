@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { NotaFiscalService } from '../../services/nota-fiscal';
 import { NotaFiscal, NotaStatus } from '../../models/nota-fiscal.model';
 import { InvoiceModalComponent } from '../../components/invoice-modal/invoice-modal';
+import { ToastService } from '../../services/toast';
 
 // Componente para listar notas fiscais
 @Component({
@@ -21,7 +22,7 @@ export class NotaFiscalList implements OnInit {
   showInvoiceModal = false;
   selectedNota: NotaFiscal | null = null;
 
-  constructor(private notaFiscalService: NotaFiscalService, private cdr: ChangeDetectorRef) { }
+  constructor(private notaFiscalService: NotaFiscalService, private cdr: ChangeDetectorRef, private toastService: ToastService) { }
   // Carrega as notas fiscais ao iniciar o componente
   ngOnInit(): void {
     this.loadNotasFiscais();
@@ -70,6 +71,7 @@ export class NotaFiscalList implements OnInit {
       error: (err) => {
         // Exibe a mensagem de erro específica vinda do backend
         this.errorMessage = err.error?.mensagem || 'Ocorreu um erro ao processar a nota.';
+        this.toastService.show(this.errorMessage, 'error');
         console.error(err);
         this.loadNotasFiscais();
       }

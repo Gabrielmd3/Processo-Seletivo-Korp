@@ -1,0 +1,7 @@
+@if (toastService.state().show) {
+  <div 
+    class="fixed top-20 right-5 p-4 rounded-lg text-white shadow-lg animate-fade-in-down z-50"
+    [ngClass]="getBackgroundColorClass()">
+    {{ toastService.state().message }}
+  </div>
+}

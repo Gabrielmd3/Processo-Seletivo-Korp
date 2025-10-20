@@ -158,7 +158,7 @@ namespace FaturamentoService.Controllers
             // Lista para rastrear os itens que tiveram baixa com sucesso
             var itensComBaixaSucesso = new List<NotaFiscalItem>();
 
-            // --- PASSO 2: Execução da Saga ---
+            // Execução da Saga
             foreach (var item in notaFiscal.Itens)
             {
                 // Prepara o conteúdo da requisição
@@ -197,8 +197,6 @@ namespace FaturamentoService.Controllers
                     return StatusCode(StatusCodes.Status503ServiceUnavailable, new { Mensagem = "O serviço de estoque está indisponível. A transação foi revertida.", Detalhes = ex.Message });
                 }
             }
-
-            // --- PASSO 3: Finalização ---
             notaFiscal.Status = NotaStatus.Fechada;
             await _context.SaveChangesAsync();
 

@@ -4,28 +4,25 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- CONFIGURAÇÃO DOS SERVIÇOS ---
-
-// 1. Adicionar o serviço que registra e habilita o uso de Controladores na aplicação.
+// 1. Adicionar os serviços dos Controladores com suporte a enums como strings.
 builder.Services.AddControllers().AddJsonOptions(options =>
     {
-        // Esta linha faz a mágica: converte enums para strings no JSON
+        // converte enums para strings no JSON
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });;
 
-// 2. Adicionar os serviços padrão do Swagger que funcionam com Controladores.
+// 2. Adicionar os serviços do Swagger para documentação da API.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Pega a string de conexão
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Registra o DbContext com o provedor do PostgreSQL.
+// Adiciona o DbContext específico para o serviço de faturamento.
 builder.Services.AddDbContext<FaturamentoDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-//Configura o IHttpClientFactory para se comunicar com o EstoqueService
-
+// Configura o HttpClient para se comunicar com o EstoqueService.
 builder.Services.AddHttpClient("EstoqueService", client =>
 {
     var estoqueApiUrl = builder.Configuration["ServiceUrls:EstoqueApi"];
@@ -36,23 +33,24 @@ builder.Services.AddHttpClient("EstoqueService", client =>
     client.BaseAddress = new Uri(estoqueApiUrl);
 });
 
+// Cria a aplicação.
 var app = builder.Build();
 
+// Aplica as migrações pendentes ao iniciar a aplicação.
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<FaturamentoDbContext>();
     dbContext.Database.Migrate();
 }
 
-// Configura o pipeline de requisições HTTP.
+// Configura o middleware para o Swagger.
 if (app.Environment.IsDevelopment())
 {
-    // 3. Adicionar o middleware que gera a página do Swagger UI.
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// 4. Adicionar o middleware que mapeia as rotas para os Controladores.
+// Habilita o roteamento para os controladores.
 app.MapControllers();
 
 app.Run();
